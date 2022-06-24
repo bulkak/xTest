@@ -6,3 +6,17 @@
  - validation errors with more information
  - not a dummy black list validator realization
 
+## to test start do:
+
+ ```
+ docker-compose up -d
+ docker ps
+ ```
+
+ - copy CONTAINER_ID of xtest_php
+ - run:
+```
+ docker exec -ti CONTAINER_ID /www/vendor/bin/phpunit /www/tests/Service/UserServiceImplTest.php
+```
+
+
