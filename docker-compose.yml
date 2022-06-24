@@ -1,0 +1,25 @@
+version: "3"
+services:
+  php:
+    build:
+      context: docker/php8
+      dockerfile: Dockerfile
+    expose:
+      - '9003'
+    volumes:
+      - ./:/www
+    restart: unless-stopped
+  mysql:
+    build: ./docker/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: xtest
+      MYSQL_DATABASE: xtest
+      MYSQL_USER: xtest
+      MYSQL_PASSWORD: xtest
+    expose:
+      - '3306'
+    ports:
+      - '3307:3306'
+    volumes:
+      - ./resources/dump:/docker-entrypoint-initdb.d
+    restart: unless-stopped
