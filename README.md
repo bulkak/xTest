@@ -5,6 +5,7 @@
  - more tests
  - validation errors with more information
  - not a dummy black list validator realization
+ - separate validation and store (stupid repository)
 
 ## to test start do:
 
