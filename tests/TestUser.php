@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace xTest\Entity;
+namespace tests;
 
 use xTest\Entity\Attributes\Generators\CurrentDatetimeGenerator;
 use xTest\Entity\Attributes\Hydrators\DateTimeHydrator;
@@ -14,9 +14,10 @@ use xTest\Entity\Attributes\Validators\GreaterThanFieldValidator;
 use xTest\Entity\Attributes\Validators\RegExpValidator;
 use xTest\Entity\Attributes\Validators\StringLengthValidator;
 use xTest\Entity\Attributes\Validators\BlackListContainsStringValidator;
+use xTest\Entity\Entity;
 
 #[TableName('users')]
-final class User implements Entity
+final class TestUser implements Entity
 {
     #[Identifier]
     public int $id;

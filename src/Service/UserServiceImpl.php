@@ -4,10 +4,9 @@ declare(strict_types=1);
 namespace xTest\Service;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 use Throwable;
 use xTest\Entity\User;
-use xTest\Logger\AuditLogger;
+use xTest\Repository\EntityValidator;
 use xTest\Repository\Repository;
 use xTest\Repository\RepositoryException;
 use xTest\Service\Dto\ServiceResponse;
@@ -17,6 +16,7 @@ final class UserServiceImpl implements UserService
 {
     public function __construct(
         private readonly Repository $userRepository,
+        private readonly EntityValidator $validator,
         private readonly LoggerInterface $errorLogger
     ){}
 
@@ -24,8 +24,12 @@ final class UserServiceImpl implements UserService
     {
         $errors = [];
         try {
-            $user = $this->userRepository->save($entity);
-            $success = true;
+            if ($this->validator->validate($entity)) {
+                $user = $this->userRepository->save($entity);
+                $success = true;
+            } else {
+                $success = false;
+            }
         } catch (Throwable $e) {
             $error = new ServiceResponseError($e->getMessage(), $e->getTraceAsString());
             $errors[] = $error;
@@ -35,6 +39,7 @@ final class UserServiceImpl implements UserService
             }
         } finally {
             $errors = $this->flushRepositoryErrors($success, $errors);
+            $errors = $this->flushValidatorErrors($success, $errors);
             return new ServiceResponse($success, $user ?? null,  $errors);
         }
     }
@@ -62,6 +67,17 @@ final class UserServiceImpl implements UserService
     {
         if (!$success) {
             foreach ($this->userRepository->flushErrors() as $error) {
+                $error = new ServiceResponseError($error, '');
+                $errors[] = $error;
+            }
+        }
+        return $errors;
+    }
+
+    private function flushValidatorErrors($success, array $errors): array
+    {
+        if (!$success) {
+            foreach ($this->validator->flushErrors() as $error) {
                 $error = new ServiceResponseError($error, '');
                 $errors[] = $error;
             }

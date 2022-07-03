@@ -7,12 +7,12 @@ use xTest\Entity\Entity;
 
 class ServiceResponse
 {
+    /**
+     * @param $errors ServiceResponseError[]
+     */
     public function __construct(
         public readonly bool $success,
         public readonly ?Entity $data,
-        /**
-         * @var $errors ServiceResponseError[]
-         */
         public readonly array $errors
     ){}
 }

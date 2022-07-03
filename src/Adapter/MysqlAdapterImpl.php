@@ -12,22 +12,7 @@ class MysqlAdapterImpl implements SqlAdapter
         private readonly PDO $connection
     ) {}
 
-    public function query(string $sql, array $bind = []): ?PDOStatement
-    {
-        try {
-            $stmt = $this->connection->prepare($sql);
-            $stmt->execute($bind);
-            return $stmt;
-        } catch (\PDOException $e) {
-            throw new AdapterException(
-                (is_numeric($e->getCode()) ? '' : '[' . $e->getCode() . ']') . $e->getMessage(),
-                0,
-                $e
-            );
-        }
-    }
-
-    public function insert(string $table, array $data): ?PDOStatement
+    public function insert(string $table, array $data): ?int
     {
         if (count($data) > 0) {
             [$values, $bind] = $this->getValuesAndBind($data);
@@ -38,13 +23,13 @@ class MysqlAdapterImpl implements SqlAdapter
             $sql = 'INSERT INTO ' . $table . ' (' . $columns . ')
 					VALUES (' . $values . ')';
 
-            return $this->query($sql, $bind);
+            return $this->query($sql, $bind)->rowCount();
         }
 
         return null;
     }
 
-    public function update(string $table, array $data, array $where): ?PDOStatement
+    public function update(string $table, array $data, array $where): ?int
     {
         if (count($data) && $where) {
             $fields = [];
@@ -63,13 +48,91 @@ class MysqlAdapterImpl implements SqlAdapter
                     WHERE ' . implode(' AND ', array_keys($where));
 
             $bind = array_merge($values, array_values($where));
-            return $this->query($sql, $bind);
+            return $this->query($sql, $bind)->rowCount();
         }
 
         return null;
     }
 
-    public function select(string $table, array $where, array $fields = null, $order = null,
+    public function getLastInsertId(): int|bool
+    {
+        return $this->query('SELECT LAST_INSERT_ID()')->fetchColumn();
+    }
+
+    public function fetchAll(string $table, array $where, array $fields = null, $order = null, ?int $limit = null, int $offset = 0): ?array
+    {
+        return $this->select(
+            $table,
+            $where,
+            $fields,
+            $order,
+            $limit,
+            $offset
+        )->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function getByColumn(string $table, string $column, int|string $value): array | bool
+    {
+        return $this->select(
+            $table,
+            [
+                $column => $value
+            ],
+        )->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function truncateTable(string $table): bool
+    {
+        return $this->query('TRUNCATE TABLE ' . $table)->execute();
+    }
+
+
+    public function beginTransaction(): SqlAdapter
+    {
+        if (!$this->isTransactionOpened()) {
+            $this->connection->beginTransaction();
+        }
+        return $this;
+    }
+
+    public function commitTransaction(): SqlAdapter
+    {
+        if ($this->isTransactionOpened()) {
+            $this->connection->commit();
+        }
+        return $this;
+    }
+
+    public function rollbackTransaction(): SqlAdapter
+    {
+        if ($this->isTransactionOpened()) {
+            $this->connection->rollback();
+        }
+        return $this;
+    }
+
+    public function isTransactionOpened(): bool
+    {
+        return $this->connection->inTransaction();
+    }
+
+
+    private function query(string $sql, array $bind = []): ?PDOStatement
+    {
+        try {
+            $stmt = $this->connection->prepare($sql);
+            $stmt->execute($bind);
+            return $stmt;
+        } catch (\PDOException $e) {
+            throw new AdapterException(
+                (is_numeric($e->getCode()) ? '' : '[' . $e->getCode() . ']') . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    private function select(string $table, array $where, array $fields = null, $order = null,
                            ?int $limit = null, int $offset = 0): ?PDOStatement
     {
         $whereString = '';
@@ -107,12 +170,12 @@ class MysqlAdapterImpl implements SqlAdapter
         return $this->query($sql, $bind);
     }
 
-    public function quote(string $string): string
+    private function quote(string $string): string
     {
         return '"' . addslashes($string) . '"';
     }
 
-    public function quoteInStrings(array $items): string
+    private function quoteInStrings(array $items): string
     {
         return implode(
             ', ',

@@ -2,10 +2,10 @@
 
 ## todo
  - better test
- - more tests
+ - ~~more tests~~
  - validation errors with more information
  - not a dummy black list validator realization
- - separate validation and store (stupid repository)
+ - ~~separate validation and store (stupid repository)~~
 
 ## to test start do:
 
@@ -15,9 +15,14 @@
  ```
 
  - copy CONTAINER_ID of xtest_php
- - run:
+ - run for integration tests:
 ```
- docker exec -ti CONTAINER_ID /www/vendor/bin/phpunit /www/tests/Service/UserServiceImplTest.php
+ docker exec -ti CONTAINER_ID /www/vendor/bin/phpunit --testsuite integration
+```
+
+- run for unit tests:
+```
+ docker exec -ti CONTAINER_ID /www/vendor/bin/phpunit --testsuite unit
 ```
 
 
