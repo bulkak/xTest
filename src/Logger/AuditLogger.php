@@ -13,16 +13,14 @@ class AuditLogger extends AbstractLogger
         fwrite(
             STDOUT,
             PHP_EOL
-            . CliOutputColor::surround(
-                CliOutputColor::BLUE,
+            . CliOutputColor::BLUE->paint(
                 time() . ': ' . $message
             )
         );
         fwrite(
             STDOUT,
             PHP_EOL
-                . CliOutputColor::surround(
-                    CliOutputColor::BLUE,
+                . CliOutputColor::BLUE->paint(
                 time() . ': ' . json_encode($context, JSON_PRETTY_PRINT)
                 )
         );

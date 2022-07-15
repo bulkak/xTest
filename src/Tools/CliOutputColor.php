@@ -11,8 +11,8 @@ enum CliOutputColor: string
     case YELLOW = "\033[93m";
     case BLUE = "\033[94m";
 
-    public static function surround(CliOutputColor $color, string $data): string
+    public function paint(string $data): string
     {
-        return $color->value . $data . "\033[0m";
+        return $this->value . $data . "\033[0m";
     }
 }

@@ -12,15 +12,13 @@ class ErrorLogger extends AbstractLogger
     {
         fwrite(
             STDOUT,
-            PHP_EOL . CliOutputColor::surround(
-                CliOutputColor::RED,
+            PHP_EOL . CliOutputColor::RED->paint(
                 time() . ': ' . $level . PHP_EOL . $message
             )
         );
         fwrite(
             STDOUT,
-             PHP_EOL . CliOutputColor::surround(
-                 CliOutputColor::RED,
+             PHP_EOL . CliOutputColor::RED->paint(
                  json_encode($context, JSON_PRETTY_PRINT)
              )
         );
